@@ -4,6 +4,8 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 
 # Content  
 
+## Codes
+
 - [Artifical Neuron Network (ANN)](/nn/dense.py)   
 Implement a naive Artifical Neuron Network with BP algorithm.
 
