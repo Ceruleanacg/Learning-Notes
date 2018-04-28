@@ -1,5 +1,8 @@
 import numpy as np
+import json
+import os
 
+from static import CKPT_DIR
 from utility import function
 from utility.logger import generate_model_logger
 
@@ -66,6 +69,11 @@ class Dense(object):
         finally:
             if not isinstance(self.model_name, str):
                 raise ValueError('Model name must be a str.')
+
+        try:
+            self.mode = options['mode']
+        except KeyError:
+            self.mode = 'train'
 
         # Init Activation Func and Grad Func.
         try:
@@ -191,6 +199,7 @@ class Dense(object):
                     self.history_loss.append(mean_epoch_loss)
                     break
             if epoch % 100 == 0:
+                self.save()
                 self.evaluate(x_data, y_data)
                 self.logger.warning("Epoch: {:d} | loss: {:.6f}".format(epoch, mean_epoch_loss))
             epoch += 1
@@ -203,7 +212,33 @@ class Dense(object):
         self.logger.warning("Accuracy: {:.3f} ".format(np.sum(y_label == y_output) / len(x_data)))
 
     def save(self):
-        pass
+        save_dir = os.path.join(CKPT_DIR, self.model_name)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        with open(os.path.join(save_dir, 'weights.json'), 'w') as fp:
+            weights = [weights.tolist() for weights in self.weights.values()]
+            json.dump(weights, fp, indent=True)
+        with open(os.path.join(save_dir, 'biases.json'), 'w') as fp:
+            biases = [biases.tolist() for biases in self.biases.values()]
+            json.dump(biases, fp, indent=True)
+        self.logger.warning("Model saved.")
 
     def restore(self):
-        pass
+        save_dir = os.path.join(CKPT_DIR, self.model_name)
+        try:
+            with open(os.path.join(save_dir, 'weights.json'), 'r') as fp:
+                weights = json.load(fp)
+                for index in range(self.total_layer_count):
+                    self.weights[index] = np.array(weights[index])
+        except FileNotFoundError:
+            raise FileNotFoundError('Weights not exists.')
+
+        try:
+            with open(os.path.join(save_dir, 'biases.json'), 'r') as fp:
+                biases = json.load(fp)
+                for index in range(self.total_layer_count):
+                    self.biases[index] = np.array(biases[index])
+        except FileNotFoundError:
+            raise FileNotFoundError('biases not exists.')
+
+        self.logger.warning("Model restored.")

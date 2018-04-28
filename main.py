@@ -26,8 +26,11 @@ dense = Dense(x_space=4, y_space=3, neuron_count_list=[10], **{
     "activation_funcs": activation_funcs,
     "learning_rate": 0.01,
     "enable_logger": True,
-    "batch_size": 30,
     "model_name": 'iris',
+    "batch_size": 30,
+    'model': 'train',
 })
 
-dense.train(x_data, y_data)
+# dense.train(x_data, y_data)
+dense.restore()
+dense.evaluate(x_data, y_data)
