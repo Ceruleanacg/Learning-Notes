@@ -4,6 +4,10 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 
 # Content  
 
+## Notes
+
+- [LinearRegression](/note/LinearRegression.ipynb)
+
 ## Codes
 
 - [Artifical Neuron Network (ANN)](/nn/dense.py)   
