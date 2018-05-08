@@ -10,8 +10,6 @@ y_data = np.multiply(2, x_data) + 3 + np.random.normal(loc=0, scale=1.0, size=(d
 x_data = x_data.reshape((-1, 1))
 y_data = y_data.reshape((-1, 1))
 
-# w = np.random.normal(size=(1, 1))
-# b = np.random.normal(size=(1, 1))
 w = 10
 b = 20
 y_predict = np.dot(x_data, w) + b
