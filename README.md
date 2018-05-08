@@ -7,6 +7,7 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 ## Notes
 
 - [LinearRegression](/note/LinearRegression.ipynb)
+- [LogisticRegression](/note/LogisticRegression.ipynb)
 
 ## Codes
 
