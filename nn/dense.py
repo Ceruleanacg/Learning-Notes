@@ -9,22 +9,22 @@ from utility.logger import generate_model_logger
 
 class Dense(object):
 
-    def __init__(self, x_space, y_space, neuron_count_list, **options):
+    def __init__(self, x_space, y_space, hidden_units_list, **options):
 
         # Init x space, y space.
         self.x_space = x_space
         self.y_space = y_space
 
         # Init layer & neuron info.
-        self.neuron_count_list = neuron_count_list
-        self.hidden_layer_count = len(neuron_count_list)
+        self.hidden_units_list = hidden_units_list
+        self.hidden_layer_count = len(hidden_units_list)
         self.total_layer_count = self.hidden_layer_count + 1
 
         # Init weights, biases.
         self.weights, self.biases = {}, {}
 
         # Init a, z, outputs caches.
-        self.a_outputs, self.z_outputs = {}, {}
+        self.z_outputs, self.z_inputs = {}, {}
 
         # Init deltas caches.
         self.deltas = {}
@@ -36,19 +36,21 @@ class Dense(object):
 
     def _init_weights_and_biases(self):
         # Hidden Layer.
-        for index, neuron_count in enumerate(self.neuron_count_list):
-            x_space = self.x_space if index == 0 else self.neuron_count_list[index - 1]
-            weights, biases = np.random.normal(0, 0.01, (neuron_count, x_space)), np.zeros((neuron_count, 1))
+        for index, hidden_units in enumerate(self.hidden_units_list):
+            # x_space is the shape of last layer, and the shape of weight of current layer.
+            x_space = self.x_space if index == 0 else self.hidden_units_list[index - 1]
+            # hidden_units is shape of current layer, also neuron count.
+            weights, biases = np.random.normal(0, 0.01, (hidden_units, x_space)), np.zeros((hidden_units, 1))
             self.weights[index], self.biases[index] = weights, biases
         # Output Layer.
-        x_space = self.neuron_count_list[-1]
+        x_space = self.hidden_units_list[-1]
         weights, biases = np.random.normal(0, 0.01, (self.y_space, x_space)), np.zeros((self.y_space, 1))
         self.weights[self.total_layer_count - 1], self.biases[self.total_layer_count - 1] = weights, biases
 
     def _validate_parameters(self):
-        if self.hidden_layer_count == 0 or len(self.neuron_count_list) == 0:
+        if self.hidden_layer_count == 0 or len(self.hidden_units_list) == 0:
             raise ValueError('Layer count or neuron count list cannot be zero.')
-        if self.hidden_layer_count != len(self.neuron_count_list):
+        if self.hidden_layer_count != len(self.hidden_units_list):
             raise ValueError('Layer count should be equal to length of neuron count list.')
 
     def _init_func_map(self):
@@ -134,28 +136,30 @@ class Dense(object):
 
     def _forward(self, input_batch):
         # Temporal result, a_batch.
-        z_output = input_batch
+        z_input = input_batch
         # Forward layer by layer.
-        for index in range(self.total_layer_count):
+        for layer_index in range(self.total_layer_count):
             # Get weights and biases.
-            weights, biases = self.weights[index], self.biases[index]
-            # Save result as grad.
-            self.z_outputs[index] = z_output
-            a_output = np.dot(z_output, weights.T) + biases.T
-            self.a_outputs[index] = a_output
-            z_output = self.activation_funcs[index](a_output)
-        return z_output
+            weights, biases = self.weights[layer_index], self.biases[layer_index]
+            # Save result as grad w.
+            self.z_inputs[layer_index] = z_input
+            z_output = np.dot(z_input, weights.T) + biases.T
+            # Save result of a for backward.
+            self.z_outputs[layer_index] = z_output
+            # z_input is also called a_output.
+            z_input = self.activation_funcs[layer_index](z_output)
+        return z_input
 
     def _backward(self, diff):
         # Backward error.
         error = diff
         for index in np.arange(0, self.total_layer_count)[::-1]:
-            # dl/dw = da/dw * dz/da * (dl/dz) | x = x_batch.
-            a_batch = self.a_outputs[index]
-            # Calculate dz/da.
-            grad_a_batch = self.grad_activation_funcs[index](a_batch)
-            # Calculate dy/dz.
-            delta = np.multiply(error, grad_a_batch)
+            # dl/dw = dz/dw * da/dz * (dl/da) | x = x_batch.
+            z_batch = self.z_outputs[index]
+            # Calculate da/dz.
+            grad_z_batch = self.grad_activation_funcs[index](z_batch)
+            # Calculate dl/da * da/dz.
+            delta = np.multiply(error, grad_z_batch)
             # Save delta.
             self.deltas[index] = delta
             # Backward error.
@@ -163,10 +167,10 @@ class Dense(object):
 
     def _update_weights_and_biases(self):
         for index in range(self.total_layer_count):
-            # Get z_output and delta.
-            z_output, delta = self.z_outputs[index], self.deltas[index]
+            # Get z_input and delta.
+            z_input, delta = self.z_inputs[index], self.deltas[index]
             # Calculate grad weights, grad biases.
-            grad_weights = -np.dot(delta.T, z_output)
+            grad_weights = -np.dot(delta.T, z_input)
             grad_biases = -np.mean(delta, axis=0).reshape(self.biases[index].shape)
             # Update weights, biases.
             self.weights[index] -= self.learning_rate * grad_weights

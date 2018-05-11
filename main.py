@@ -5,7 +5,7 @@ from sklearn.datasets import load_iris
 from utility import function
 from nn.dense import Dense
 
-np.random.seed(33)
+np.random.seed(42)
 
 iris = load_iris()
 
@@ -21,7 +21,7 @@ activation_funcs = [function.relu] * 1
 # activation_funcs = [function.sigmoid] * 1
 activation_funcs.append(function.linear)
 
-dense = Dense(x_space=4, y_space=3, neuron_count_list=[10], **{
+dense = Dense(x_space=4, y_space=3, hidden_units_list=[10], **{
     "loss_func": function.softmax_cross_entropy,
     "activation_funcs": activation_funcs,
     "learning_rate": 0.01,
@@ -31,6 +31,6 @@ dense = Dense(x_space=4, y_space=3, neuron_count_list=[10], **{
     'model': 'train',
 })
 
-# dense.train(x_data, y_data)
-dense.restore()
+dense.train(x_data, y_data)
+# dense.restore()
 dense.evaluate(x_data, y_data)
