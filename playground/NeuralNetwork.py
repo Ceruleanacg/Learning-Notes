@@ -5,6 +5,8 @@ from sklearn.preprocessing import StandardScaler
 from utility import function
 from nn.dense import Dense
 
+np.random.seed(135)
+
 data_count = 25
 
 x1_points = np.linspace(0, 10, data_count).reshape((-1, 1))
@@ -44,11 +46,11 @@ activation_funcs.append(function.linear)
 dense = Dense(x_space=2, y_space=4, hidden_units_list=[6, 6], **{
     "loss_func": function.softmax_cross_entropy,
     "activation_funcs": activation_funcs,
-    "learning_rate": 0.03,
+    "learning_rate": 0.003,
     "enable_logger": True,
     "model_name": 'base',
     "batch_size": 100,
-    "max_epoch": 100000,
+    "max_epoch": 1000,
     'model': 'train',
 })
 

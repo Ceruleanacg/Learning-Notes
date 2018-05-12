@@ -61,7 +61,7 @@ class Dense(object):
             function.linear: np.vectorize(function.grad_linear),
             function.sigmoid: np.vectorize(function.grad_sigmoid),
         }
-        self.loss_diff_map = {
+        self.grad_loss_map = {
             function.softmax_cross_entropy: function.grad_softmax_cross_entropy,
             function.mean_square_error: function.grad_mean_square_error
         }
@@ -97,6 +97,18 @@ class Dense(object):
         except KeyError:
             raise KeyError('Grad func not exists.')
 
+        try:
+            self.loss_func = options['loss_func']
+        except KeyError:
+            self.loss_func = function.mean_square_error
+        finally:
+            self.grad_func = self.grad_loss_map[self.loss_func]
+            # Enable softmax.
+            if self.grad_func == self.grad_loss_map[function.softmax_cross_entropy]:
+                self.enable_softmax = True
+            else:
+                self.enable_softmax = False
+
         # Init Batch Size.
         try:
             self.batch_size = options['batch_size']
@@ -114,13 +126,6 @@ class Dense(object):
         finally:
             if self.learning_rate < 0.0:
                 raise ValueError('Learning rate must be positive.')
-
-        try:
-            self.loss_func = options['loss_func']
-        except KeyError:
-            self.loss_func = function.mean_square_error
-        finally:
-            self.diff_func = self.loss_diff_map[self.loss_func]
 
         try:
             self.max_epoch = options['max_epoch']
@@ -196,7 +201,7 @@ class Dense(object):
                 loss = self.loss_func(y_predict, y_batch)
                 epoch_loss.append(loss)
                 # Calculate error.
-                error = self.diff_func(y_predict, y_batch)
+                error = self.grad_func(y_predict, y_batch)
                 # Bp & Update.
                 self._backward(error)
                 self._update_weights_and_biases()
@@ -216,7 +221,11 @@ class Dense(object):
             epoch += 1
 
     def predict(self, x_batch):
-        return self._forward(x_batch)
+        if self.enable_softmax:
+            result = function.softmax(self._forward(x_batch))
+        else:
+            result = self._forward(x_batch)
+        return result
 
     def evaluate(self, x_data, y_data):
         y_label, y_output = np.argmax(y_data, axis=1), np.argmax(self.predict(x_data), axis=1)

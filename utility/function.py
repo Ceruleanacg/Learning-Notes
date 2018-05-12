@@ -34,10 +34,9 @@ def grad_linear(x):
 
 
 def softmax(x):
-    # x[x < 1e-2] = 1e-2
-    # x[x > 1e2] = 1e2
-    a = np.power(np.e, x)
-    z = np.sum(a, axis=0)
+    x_copy = x.copy()
+    a = np.exp(x_copy - np.max(x_copy, axis=1, keepdims=True))
+    z = np.sum(a, axis=1, keepdims=True)
     return a / z
 
 
@@ -54,5 +53,5 @@ def softmax_cross_entropy(y, label):
 
 
 def grad_softmax_cross_entropy(y, label):
-    return label - softmax(y)
+    return label - y
 
