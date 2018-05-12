@@ -22,7 +22,7 @@ activation_funcs = [function.relu] * 1
 activation_funcs.append(function.linear)
 
 dense = Dense(x_space=4, y_space=3, hidden_units_list=[10], **{
-    "loss_func": function.softmax_cross_entropy,
+    "loss_func": function.mean_square_error,
     "activation_funcs": activation_funcs,
     "learning_rate": 0.01,
     "enable_logger": True,

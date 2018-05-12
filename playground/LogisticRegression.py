@@ -37,8 +37,8 @@ for iteration in range(1000):
     # 计算交叉熵
     cross_entropy = -np.mean(y_data * np.log(y_positive_predict) + (1 - y_data) * np.log(y_negative_predict))
     # 计算梯度
-    grad_w = -np.mean(y_data / y_positive_predict * grad_sigmoid(y_product) * x_data.T, axis=1)
-    # grad_w = -np.mean((y_data - y_positive_predict) * x_data.T, axis=1)
+    # grad_w = -np.mean(y_data / y_positive_predict * grad_sigmoid(y_product) * x_data.T, axis=1)
+    grad_w = -np.mean((y_data - y_positive_predict) * x_data.T, axis=1)
     # 更新梯度
     w = w - 0.03 * grad_w
     # 缓存交叉熵

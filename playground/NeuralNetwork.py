@@ -44,11 +44,11 @@ activation_funcs.append(function.linear)
 dense = Dense(x_space=2, y_space=4, hidden_units_list=[6, 6], **{
     "loss_func": function.softmax_cross_entropy,
     "activation_funcs": activation_funcs,
-    "learning_rate": 0.003,
+    "learning_rate": 0.03,
     "enable_logger": True,
-    "model_name": 'iris',
+    "model_name": 'base',
     "batch_size": 100,
-    "max_epoch": 1000,
+    "max_epoch": 100000,
     'model': 'train',
 })
 

@@ -61,6 +61,10 @@ class Dense(object):
             function.linear: np.vectorize(function.grad_linear),
             function.sigmoid: np.vectorize(function.grad_sigmoid),
         }
+        self.loss_diff_map = {
+            function.softmax_cross_entropy: function.grad_softmax_cross_entropy,
+            function.mean_square_error: function.grad_mean_square_error
+        }
 
     def _init_options(self, options):
 
@@ -115,6 +119,8 @@ class Dense(object):
             self.loss_func = options['loss_func']
         except KeyError:
             self.loss_func = function.mean_square_error
+        finally:
+            self.diff_func = self.loss_diff_map[self.loss_func]
 
         try:
             self.max_epoch = options['max_epoch']
@@ -150,16 +156,17 @@ class Dense(object):
             z_input = self.activation_funcs[layer_index](z_output)
         return z_input
 
-    def _backward(self, diff):
-        # Backward error.
-        error = diff
+    def _backward(self, error):
+        # error here is shape of (batch_size, y_space)
         for index in np.arange(0, self.total_layer_count)[::-1]:
             # dl/dw = dz/dw * da/dz * (dl/da) | x = x_batch.
-            z_batch = self.z_outputs[index]
+            z_outputs = self.z_outputs[index]
+            # Get grad of activation func.
+            grad_activation_func = self.grad_activation_funcs[index]
             # Calculate da/dz.
-            grad_z_batch = self.grad_activation_funcs[index](z_batch)
+            grad_z_batch = grad_activation_func(z_outputs)
             # Calculate dl/da * da/dz.
-            delta = np.multiply(error, grad_z_batch)
+            delta = error * grad_z_batch
             # Save delta.
             self.deltas[index] = delta
             # Backward error.
@@ -169,7 +176,7 @@ class Dense(object):
         for index in range(self.total_layer_count):
             # Get z_input and delta.
             z_input, delta = self.z_inputs[index], self.deltas[index]
-            # Calculate grad weights, grad biases.
+            # Calculate grad weights, grad biases, dl/da * da/dz * dz/dw
             grad_weights = -np.dot(delta.T, z_input)
             grad_biases = -np.mean(delta, axis=0).reshape(self.biases[index].shape)
             # Update weights, biases.
@@ -185,13 +192,13 @@ class Dense(object):
                 x_batch, y_batch = x_data[s_index: e_index], y_data[s_index: e_index]
                 # Calculate y_predict.
                 y_predict = self._forward(x_batch)
-                # Calculate diff.
-                diff = y_batch - y_predict
                 # Calculate loss.
                 loss = self.loss_func(y_predict, y_batch)
                 epoch_loss.append(loss)
+                # Calculate error.
+                error = self.diff_func(y_predict, y_batch)
                 # Bp & Update.
-                self._backward(diff)
+                self._backward(error)
                 self._update_weights_and_biases()
                 # Update index.
                 s_index += self.batch_size
