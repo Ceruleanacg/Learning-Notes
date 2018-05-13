@@ -8,6 +8,7 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 
 - [LinearRegression](/note/LinearRegression.ipynb)
 - [LogisticRegression](/note/LogisticRegression.ipynb)
+- [NeuralNetwork](/note/NeuralNetwork.ipynb)
 
 ## Codes
 
@@ -15,7 +16,9 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 
 # Requirements
 - numpy
+- scipy
 - sklearn
+- matplotlib
 
 # Instructions for codes
 

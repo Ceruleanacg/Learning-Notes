@@ -174,7 +174,7 @@ class Dense(object):
             delta = error * grad_z_batch
             # Save delta.
             self.deltas[index] = delta
-            # Backward error.
+            # Update error, dz/da
             error = np.dot(delta, self.weights[index])
 
     def _update_weights_and_biases(self):
