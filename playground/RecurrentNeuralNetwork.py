@@ -1,6 +1,6 @@
 import numpy as np
 
-from nn.rnn import RNN
+from ann.rnn import RNN
 
 seq_length = 3
 

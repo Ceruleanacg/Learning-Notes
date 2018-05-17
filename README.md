@@ -12,7 +12,7 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 
 ## Codes
 
-- [Artifical Neuron Network (ANN)](/nn/dense.py)   
+- [Artifical Neuron Network (ANN)](/ann/dense.py)   
 
 # Requirements
 - numpy
@@ -22,7 +22,7 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 
 # Instructions for codes
 
-### [Artifical Neuron Network (ANN)](/nn/dense.py) 
+### [Artifical Neuron Network (ANN)](/ann/dense.py) 
 
 1. Load your data, for example, iris data set.
 ```
