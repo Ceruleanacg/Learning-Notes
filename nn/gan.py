@@ -26,7 +26,6 @@ class GAN(object):
             dense = tf.layers.dense(x, activation=tf.nn.relu)
             pass
 
-
     def _init_op(self):
         pass
 
