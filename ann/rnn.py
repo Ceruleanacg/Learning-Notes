@@ -72,8 +72,7 @@ class RNN(object):
             p_output = self.p_outputs[seq_index]
             # dp/dz
             p_input = self.p_inputs[seq_index]
-            #
-
+            # TODO - Implements
 
     def train(self, x_data, y_data):
         pass
