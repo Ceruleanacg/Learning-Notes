@@ -21,6 +21,7 @@ Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes
 - scipy
 - sklearn
 - matplotlib
+- tensorflow==1.4
 
 # Instructions for codes
 
