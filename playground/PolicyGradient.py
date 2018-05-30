@@ -71,8 +71,6 @@ class Agent(object):
         for index in reversed(range(0, len(self.r_buffer))):
             r_delta = r_delta * self.gamma + self.r_buffer[index]
             r_normalized[index] = r_delta
-        r_normalized -= np.mean(r_normalized)
-        r_normalized /= np.std(r_normalized)
         return r_normalized
 
     def predict(self, state):
@@ -87,8 +85,8 @@ class Agent(object):
     def train(self):
         r_normalized = self.calculate_normalized_r()
         _, loss = self.session.run([self.train_op, self.loss_func], feed_dict={
-            self.s: np.vstack(self.s_buffer),
-            self.a: np.array(self.a_buffer),
+            self.s: self.s_buffer,
+            self.a: self.a_buffer,
             self.r: r_normalized,
         })
 
