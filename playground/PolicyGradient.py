@@ -65,14 +65,6 @@ class Agent(object):
         except KeyError:
             self.gamma = 0.95
 
-    def calculate_normalized_r(self):
-        r_normalized = np.zeros_like(self.r_buffer)
-        r_delta = 0
-        for index in reversed(range(0, len(self.r_buffer))):
-            r_delta = r_delta * self.gamma + self.r_buffer[index]
-            r_normalized[index] = r_delta
-        return r_normalized
-
     def predict(self, state):
         action_prob = self.session.run(self.a_prob, feed_dict={self.s: state[np.newaxis, :]})
         return np.random.choice(range(action_prob.shape[1]), p=action_prob.ravel())
@@ -83,11 +75,19 @@ class Agent(object):
         self.r_buffer.append(reward)
 
     def train(self):
-        r_normalized = self.calculate_normalized_r()
+        # Copy r_buffer
+        r_buffer = self.r_buffer
+        # Init r_tau
+        r_tau = 0
+        # Calculate r_tau
+        for index in reversed(range(0, len(r_buffer))):
+            r_tau = r_tau * self.gamma + r_buffer[index]
+            self.r_buffer[index] = r_tau
+        # Minimize loss.
         _, loss = self.session.run([self.train_op, self.loss_func], feed_dict={
             self.s: self.s_buffer,
             self.a: self.a_buffer,
-            self.r: r_normalized,
+            self.r: self.r_buffer,
         })
 
         self.s_buffer, self.a_buffer, self.r_buffer = [], [], []
