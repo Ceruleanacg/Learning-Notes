@@ -1,6 +1,6 @@
-# Descent - Learning Notes of DRL & DL
+# Learning Notes of DRL & DL
 
-Descent is a repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
+A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 
 # Content  
 
