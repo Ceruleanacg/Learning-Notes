@@ -108,8 +108,8 @@ def main(_):
         s, r_episode = env.reset(), 0
         # Start episode.
         while True:
-            # if episode > 80:
-            #     env.render()
+            if episode > 80:
+                env.render()
             # Predict action.
             a = model.predict(s)
             # Iteration.
