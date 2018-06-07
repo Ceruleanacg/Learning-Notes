@@ -11,6 +11,8 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 - [NeuralNetwork](/note/NeuralNetwork.ipynb)
 - [Word2Vec](/note/Word2Vec.ipynb)
 - [GloVe](/note/GloVe.ipynb)
+- [PolicyGradient](/note/PolicyGradient.ipynb)
+- [DQN](/note/DQN.ipynb)
 
 ## Codes
 
