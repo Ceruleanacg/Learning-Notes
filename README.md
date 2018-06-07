@@ -14,7 +14,7 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 
 ## Codes
 
-- [Artifical Neuron Network (ANN)](/ann/dense.py)   
+- [Artifical Neuron Network (ANN)](/ann/Dense.py)   
 
 # Requirements
 - numpy
@@ -25,7 +25,7 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 
 # Instructions for codes
 
-### [Artifical Neuron Network (ANN)](/ann/dense.py) 
+### [Artifical Neuron Network (ANN)](/ann/Dense.py) 
 
 1. Load your data, for example, iris data set.
 ```

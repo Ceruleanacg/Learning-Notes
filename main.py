@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import load_iris
 from utility import function
-from ann.dense import Dense
+from ann.Dense import Dense
 
 np.random.seed(42)
 
