@@ -11,7 +11,7 @@ def generate_model_logger(model_name):
 
     log_path = '{}-{}-{}'.format(model_name, DATETIME_NOW, '.log')
 
-    logger = logging.getLogger('model_logger')
+    logger = logging.getLogger(model_name)
     logger.setLevel(logging.DEBUG)
 
     log_sh = logging.StreamHandler()

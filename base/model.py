@@ -1,9 +1,9 @@
 # coding=utf-8
 
 import tensorflow as tf
-import logging
 
 from abc import abstractmethod
+from utility.logger import *
 from static import *
 
 KEY_TRAIN_EPISODE = 'train_episodes'
@@ -26,17 +26,15 @@ class BaseModel(object):
         self.session = session
         # Init env.
         self.env = env
-        # Init parameters.
-        self.logger = logging.getLogger('logger')
+        # Init options.
         self._init_options(options)
-        self._init_summary_writer()
 
     def _init_saver(self):
         self.checkpoint_path = os.path.join(CKPT_DIR, self.model_name, 'ckpt')
         self.saver = tf.train.Saver()
 
     def _init_summary_writer(self):
-        self.summary_path = os.path.join(CKPT_DIR, self.model_name)
+        self.summary_path = os.path.join(SUMR_DIR, self.model_name, DATETIME_NOW)
         self.merged_summary_op = tf.summary.merge_all()
         self.summary_writer = tf.summary.FileWriter(self.summary_path, self.session.graph)
 
@@ -61,6 +59,8 @@ class BaseModel(object):
             self.batch_size = options[KEY_BATCH_SIZE]
         except KeyError:
             self.batch_size = 64
+
+        self.logger = generate_model_logger(self.model_name)
 
     def save(self):
         self.saver.save(self.session, self.checkpoint_path)
