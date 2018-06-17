@@ -13,6 +13,7 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 - [GloVe](/note/GloVe.ipynb)
 - [PolicyGradient](/note/PolicyGradient.ipynb)
 - [DQN](/note/DQN.ipynb)
+- [PPO](/note/PPO.ipynb)
 
 ## Codes
 
