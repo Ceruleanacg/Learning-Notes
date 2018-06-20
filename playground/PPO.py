@@ -1,17 +1,16 @@
 # coding=utf-8
 
-import tensorflow as tf
 import numpy as np
 import gym
 
-
-from base.model import BaseRLModel
+from base.model import *
+from utility.launcher import start_game
 
 
 class Agent(BaseRLModel):
 
-    def __init__(self, session, env, a_space, s_space, **options):
-        super(Agent, self).__init__(session, env, a_space, s_space, **options)
+    def __init__(self, a_space, s_space, **options):
+        super(Agent, self).__init__(a_space, s_space, **options)
 
         self._init_input()
         self._init_nn()
@@ -65,7 +64,7 @@ class Agent(BaseRLModel):
             # Kernel initializer.
             w_initializer = tf.random_normal_initializer(0.0, 0.01)
             # First dense.
-            f_dense = tf.layers.dense(self.s, 32, tf.nn.relu, trainable=trainable, kernel_initializer=w_initializer)
+            f_dense = tf.layers.dense(self.s, 64, tf.nn.relu, trainable=trainable, kernel_initializer=w_initializer)
             # Second dense.
             s_dense = tf.layers.dense(f_dense, 32, tf.nn.relu, trainable=trainable, kernel_initializer=w_initializer)
             # Action logits.
@@ -124,50 +123,18 @@ class Agent(BaseRLModel):
         self.r_buffer = []
         self.a_p_r_buffer = []
 
-    def run(self):
-        if self.mode == 'train':
-            for episode in range(self.train_episodes):
-                s, r_episode = self.env.reset(), 0
-                while True:
-                    if episode > 200:
-                        self.env.render()
-                    a = self.predict(s)
-                    s_n, r, done, _ = self.env.step(a)
-                    if done:
-                        r = -5
-                    r_episode += r
-                    self.snapshot(s, a, r, s_n)
-                    s = s_n
-                    if done:
-                        break
-                self.train()
-                if episode % 25 == 0:
-                    self.logger.warning('Episode: {} | Rewards: {}'.format(episode, r_episode))
-                    self.save()
-        else:
-            for episode in range(self.eval_episodes):
-                s, r_episode = self.env.reset()
-                while True:
-                    a = self.predict(s)
-                    s_n, r, done, _ = self.env.step(a)
-                    r_episode += r
-                    s = s_n
-                    if done:
-                        break
-
 
 def main(_):
     # Make env.
     env = gym.make('CartPole-v0')
     env.seed(1)
     env = env.unwrapped
-    # Init session.
-    session = tf.Session()
     # Init agent.
-    agent = Agent(session, env, env.action_space.n, env.observation_space.shape[0], **{
-        'model_name': 'PolicyGradient',
+    agent = Agent(env.action_space.n, env.observation_space.shape[0], **{
+        KEY_MODEL_NAME: 'PPO',
+        KEY_TRAIN_EPISODE: 10000
     })
-    agent.run()
+    start_game(env, agent)
 
 
 if __name__ == '__main__':

@@ -1,17 +1,16 @@
 # coding=utf-8
 
-import tensorflow as tf
 import numpy as np
 import gym
 
-
 from base.model import *
+from utility.launcher import start_game
 
 
 class Agent(BaseRLModel):
 
-    def __init__(self, session, env, a_space, s_space, **options):
-        super(Agent, self).__init__(session, env, a_space, s_space, **options)
+    def __init__(self, a_space, s_space, **options):
+        super(Agent, self).__init__(a_space, s_space, **options)
 
         self._init_input()
         self._init_nn()
@@ -21,8 +20,6 @@ class Agent(BaseRLModel):
         self.buffer = np.zeros((self.buffer_size, self.s_space + 1 + 1 + self.s_space))
         self.buffer_count = 0
 
-        self.total_train_step = 0
-
         self.update_target_net_step = 200
 
         self.session.run(tf.global_variables_initializer())
@@ -30,9 +27,9 @@ class Agent(BaseRLModel):
     def _init_input(self, *args):
         with tf.variable_scope('input'):
             self.s_n = tf.placeholder(tf.float32, [None, self.s_space])
-            self.s = tf.placeholder(tf.float32,   [None, self.s_space])
-            self.r = tf.placeholder(tf.float32,   [None, ])
-            self.a = tf.placeholder(tf.int32,     [None, ])
+            self.s = tf.placeholder(tf.float32, [None, self.s_space])
+            self.r = tf.placeholder(tf.float32, [None, ])
+            self.a = tf.placeholder(tf.int32, [None, ])
 
     def _init_nn(self, *args):
         with tf.variable_scope('actor_net'):
@@ -88,7 +85,7 @@ class Agent(BaseRLModel):
             self.update_q_net = [tf.assign(t, e) for t, e in zip(t_params, p_params)]
 
     def predict(self, s):
-        if np.random.uniform() < self.epsilon:
+        if np.random.uniform() < self.epsilon or self.mode == 'test':
             a = np.argmax(self.session.run(self.q_predict, feed_dict={self.s: s[np.newaxis, :]}))
         else:
             a = np.random.randint(0, self.a_space)
@@ -99,51 +96,25 @@ class Agent(BaseRLModel):
         self.buffer_count += 1
 
     def train(self):
-        if self.total_train_step % self.update_target_net_step == 0:
+        if self.training_step % self.update_target_net_step == 0:
             self.session.run(self.update_q_net)
 
-        batch = self.buffer[np.random.choice(self.buffer_size, size=self.batch_size), :]
+        TimeInspector.set_time_mark()
+        for train_step in range(self.train_steps):
 
-        s = batch[:, :self.s_space]
-        s_n = batch[:, -self.s_space:]
-        a = batch[:, self.s_space].reshape((-1))
-        r = batch[:, self.s_space + 1]
+            batch = self.buffer[np.random.choice(self.buffer_size, size=self.batch_size), :]
 
-        _, cost = self.session.run([self.train_op, self.loss_func], {
-            self.s: s, self.a: a, self.r: r, self.s_n: s_n
-        })
+            s = batch[:, :self.s_space]
+            s_n = batch[:, -self.s_space:]
+            a = batch[:, self.s_space].reshape((-1))
+            r = batch[:, self.s_space + 1]
 
-    def run(self):
-        if self.mode == 'train':
-            for episode in range(self.train_episodes):
-                s, r_episode = self.env.reset(), 0
-                while True:
-                    # if episode > 400:
-                    #     self.env.render()
-                    a = self.predict(s)
-                    s_n, r, done, _ = self.env.step(a)
-                    if done:
-                        r = -5
-                    r_episode += r
-                    self.snapshot(s, a, r_episode, s_n)
-                    s = s_n
-                    if done:
-                        break
-                if self.buffer_count > self.buffer_size:
-                    self.train()
-                if episode % 50 == 0:
-                    self.logger.warning('Episode: {} | Rewards: {}'.format(episode, r_episode))
-                    self.save()
-        else:
-            for episode in range(self.eval_episodes):
-                s, r_episode = self.env.reset()
-                while True:
-                    a = self.predict(s)
-                    s_n, r, done, _ = self.env.step(a)
-                    r_episode += r
-                    s = s_n
-                    if done:
-                        break
+            _, cost = self.session.run([self.train_op, self.loss_func], {
+                self.s: s, self.a: a, self.r: r, self.s_n: s_n
+            })
+
+            self.training_step += 1
+        TimeInspector.log_cost_time('{} training steps done'.format(self.train_steps))
 
 
 def main(_):
@@ -151,14 +122,12 @@ def main(_):
     env = gym.make('CartPole-v0')
     env.seed(1)
     env = env.unwrapped
-    # Init session.
-    session = tf.Session()
     # Init agent.
-    agent = Agent(session, env, env.action_space.n, env.observation_space.shape[0], **{
+    agent = Agent(env.action_space.n, env.observation_space.shape[0], **{
         KEY_MODEL_NAME: 'DQN',
         KEY_TRAIN_EPISODE: 10000
     })
-    agent.run()
+    start_game(env, agent)
 
 
 if __name__ == '__main__':
