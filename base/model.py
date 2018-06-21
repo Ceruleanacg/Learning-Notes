@@ -61,11 +61,8 @@ class BaseModel(object):
         try:
             self.session = options[KEY_SESSION]
         except KeyError:
-            # config = tf.ConfigProto(device_count={"CPU": 1},
-            #                         inter_op_parallelism_threads=1,
-            #                         intra_op_parallelism_threads=8,
-            #                         log_device_placement=True)
-            self.session = tf.Session()
+            if not self.enable_eager:
+                self.session = tf.Session()
 
         try:
             self.model_name = options[KEY_MODEL_NAME]
@@ -90,7 +87,7 @@ class BaseModel(object):
         try:
             self.batch_size = options[KEY_BATCH_SIZE]
         except KeyError:
-            self.batch_size = 64
+            self.batch_size = 128
 
         try:
             self.seq_length = options[KEY_SEQ_LENGTH]
@@ -126,7 +123,7 @@ class BaseRLModel(BaseModel):
         try:
             self.train_steps = options[KEY_TRAIN_STEPS]
         except KeyError:
-            self.train_steps = 2000
+            self.train_steps = 1000
 
         try:
             self.eval_episodes = options[KEY_EVAL_EPISODE]
@@ -146,12 +143,12 @@ class BaseRLModel(BaseModel):
         try:
             self.epsilon = options[KET_EPSILON]
         except KeyError:
-            self.epsilon = 0.9
+            self.epsilon = 0.85
 
         try:
             self.buffer_size = options[KEY_BUFFER_SIZE]
         except KeyError:
-            self.buffer_size = 10000
+            self.buffer_size = 500
 
         try:
             self.save_episode = options[KEY_SAVE_EPISODE]

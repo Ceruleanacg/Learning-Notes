@@ -6,6 +6,8 @@ import gym
 from base.model import *
 from utility.launcher import start_game
 
+tf.set_random_seed(8)
+
 
 class Agent(BaseRLModel):
 
@@ -20,7 +22,7 @@ class Agent(BaseRLModel):
         self.buffer = np.zeros((self.buffer_size, self.s_space + 1 + 1 + self.s_space))
         self.buffer_count = 0
 
-        self.update_target_net_step = 200
+        self.update_target_net_step = 100
 
         self.session.run(tf.global_variables_initializer())
 
@@ -32,34 +34,33 @@ class Agent(BaseRLModel):
             self.a = tf.placeholder(tf.int32, [None, ])
 
     def _init_nn(self, *args):
-        with tf.variable_scope('actor_net'):
-            # w,b initializer
-            w_initializer = tf.random_normal_initializer(mean=0.0, stddev=0.3)
-            b_initializer = tf.constant_initializer(0.1)
+        # w,b initializer
+        w_initializer = tf.random_normal_initializer(mean=0.0, stddev=0.0001)
+        b_initializer = tf.constant_initializer(0.1)
 
-            with tf.variable_scope('predict_q_net'):
-                phi_state = tf.layers.dense(self.s,
-                                            32,
-                                            tf.nn.relu,
+        with tf.variable_scope('predict_q_net'):
+            phi_state = tf.layers.dense(self.s,
+                                        64,
+                                        tf.nn.relu,
+                                        kernel_initializer=w_initializer,
+                                        bias_initializer=b_initializer)
+
+            self.q_predict = tf.layers.dense(phi_state,
+                                             self.a_space,
+                                             kernel_initializer=w_initializer,
+                                             bias_initializer=b_initializer)
+
+        with tf.variable_scope('target_q_net'):
+            phi_state_next = tf.layers.dense(self.s_n,
+                                             64,
+                                             tf.nn.relu,
+                                             kernel_initializer=w_initializer,
+                                             bias_initializer=b_initializer)
+
+            self.q_target = tf.layers.dense(phi_state_next,
+                                            self.a_space,
                                             kernel_initializer=w_initializer,
                                             bias_initializer=b_initializer)
-
-                self.q_predict = tf.layers.dense(phi_state,
-                                                 self.a_space,
-                                                 kernel_initializer=w_initializer,
-                                                 bias_initializer=b_initializer)
-
-            with tf.variable_scope('target_q_net'):
-                phi_state_next = tf.layers.dense(self.s_n,
-                                                 32,
-                                                 tf.nn.relu,
-                                                 kernel_initializer=w_initializer,
-                                                 bias_initializer=b_initializer)
-
-                self.q_target = tf.layers.dense(phi_state_next,
-                                                self.a_space,
-                                                kernel_initializer=w_initializer,
-                                                bias_initializer=b_initializer)
 
     def _init_op(self):
         with tf.variable_scope('q_real'):
@@ -96,25 +97,25 @@ class Agent(BaseRLModel):
         self.buffer_count += 1
 
     def train(self):
+
+        if self.buffer_count < self.buffer_size:
+            return
+
         if self.training_step % self.update_target_net_step == 0:
             self.session.run(self.update_q_net)
 
-        TimeInspector.set_time_mark()
-        for train_step in range(self.train_steps):
+        batch = self.buffer[np.random.choice(self.buffer_size, size=self.batch_size), :]
 
-            batch = self.buffer[np.random.choice(self.buffer_size, size=self.batch_size), :]
+        s = batch[:, :self.s_space]
+        s_n = batch[:, -self.s_space:]
+        a = batch[:, self.s_space].reshape((-1))
+        r = batch[:, self.s_space + 1]
 
-            s = batch[:, :self.s_space]
-            s_n = batch[:, -self.s_space:]
-            a = batch[:, self.s_space].reshape((-1))
-            r = batch[:, self.s_space + 1]
+        _, cost = self.session.run([self.train_op, self.loss_func], {
+            self.s: s, self.a: a, self.r: r, self.s_n: s_n
+        })
 
-            _, cost = self.session.run([self.train_op, self.loss_func], {
-                self.s: s, self.a: a, self.r: r, self.s_n: s_n
-            })
-
-            self.training_step += 1
-        TimeInspector.log_cost_time('{} training steps done'.format(self.train_steps))
+        self.training_step += 1
 
 
 def main(_):
@@ -127,7 +128,7 @@ def main(_):
         KEY_MODEL_NAME: 'DQN',
         KEY_TRAIN_EPISODE: 10000
     })
-    start_game(env, agent)
+    start_game(env, agent, on_policy=False)
 
 
 if __name__ == '__main__':
