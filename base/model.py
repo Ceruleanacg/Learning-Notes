@@ -82,7 +82,7 @@ class BaseModel(object):
         try:
             self.learning_rate = options[KEY_LEARNING_RATE]
         except KeyError:
-            self.learning_rate = 0.003
+            self.learning_rate = 0.001
 
         try:
             self.batch_size = options[KEY_BATCH_SIZE]
@@ -143,7 +143,7 @@ class BaseRLModel(BaseModel):
         try:
             self.epsilon = options[KET_EPSILON]
         except KeyError:
-            self.epsilon = 0.85
+            self.epsilon = 0.9
 
         try:
             self.buffer_size = options[KEY_BUFFER_SIZE]

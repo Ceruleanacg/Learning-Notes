@@ -1,7 +1,7 @@
 from time import time
 
 
-def start_game(env, agent, on_policy=True):
+def start_game(env, agent):
     # Train.
     if agent.mode == 'train':
         for episode in range(agent.train_episodes):
@@ -9,11 +9,9 @@ def start_game(env, agent, on_policy=True):
             while True:
                 a = agent.predict(s)
                 s_n, r, done, _ = env.step(a)
+                r = r if not done else -10
                 r_episode += r
-                if on_policy:
-                    agent.snapshot(s, a, r, s_n)
-                else:
-                    agent.snapshot(s, a, r_episode, s_n)
+                agent.snapshot(s, a, r, s_n)
                 s = s_n
                 if done:
                     # Logs.

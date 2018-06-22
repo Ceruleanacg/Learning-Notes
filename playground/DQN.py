@@ -6,7 +6,7 @@ import gym
 from base.model import *
 from utility.launcher import start_game
 
-tf.set_random_seed(8)
+tf.set_random_seed(7)
 
 
 class Agent(BaseRLModel):
@@ -22,20 +22,18 @@ class Agent(BaseRLModel):
         self.buffer = np.zeros((self.buffer_size, self.s_space + 1 + 1 + self.s_space))
         self.buffer_count = 0
 
-        self.update_target_net_step = 100
-
-        self.session.run(tf.global_variables_initializer())
+        self.update_target_net_step = 200
 
     def _init_input(self, *args):
         with tf.variable_scope('input'):
             self.s_n = tf.placeholder(tf.float32, [None, self.s_space])
-            self.s = tf.placeholder(tf.float32, [None, self.s_space])
-            self.r = tf.placeholder(tf.float32, [None, ])
-            self.a = tf.placeholder(tf.int32, [None, ])
+            self.s = tf.placeholder(tf.float32,   [None, self.s_space])
+            self.r = tf.placeholder(tf.float32,   [None, ])
+            self.a = tf.placeholder(tf.int32,     [None, ])
 
     def _init_nn(self, *args):
         # w,b initializer
-        w_initializer = tf.random_normal_initializer(mean=0.0, stddev=0.0001)
+        w_initializer = tf.random_normal_initializer(mean=0.0, stddev=0.00003)
         b_initializer = tf.constant_initializer(0.1)
 
         with tf.variable_scope('predict_q_net'):
@@ -85,8 +83,10 @@ class Agent(BaseRLModel):
             p_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='predict_q_net')
             self.update_q_net = [tf.assign(t, e) for t, e in zip(t_params, p_params)]
 
+        self.session.run(tf.global_variables_initializer())
+
     def predict(self, s):
-        if np.random.uniform() < self.epsilon or self.mode == 'test':
+        if np.random.uniform() < self.epsilon:
             a = np.argmax(self.session.run(self.q_predict, feed_dict={self.s: s[np.newaxis, :]}))
         else:
             a = np.random.randint(0, self.a_space)
@@ -97,25 +97,26 @@ class Agent(BaseRLModel):
         self.buffer_count += 1
 
     def train(self):
+        for train_step in range(self.train_steps):
+            # Update target net if need.
+            if self.training_step % self.update_target_net_step == 0:
+                self.session.run(self.update_q_net)
+            # Get batch.
+            if self.buffer_count < self.batch_size:
+                batch = self.buffer[np.random.choice(self.buffer_count, size=self.batch_size), :]
+            else:
+                batch = self.buffer[np.random.choice(self.buffer_size, size=self.batch_size), :]
 
-        if self.buffer_count < self.buffer_size:
-            return
+            s = batch[:, :self.s_space]
+            s_n = batch[:, -self.s_space:]
+            a = batch[:, self.s_space].reshape((-1))
+            r = batch[:, self.s_space + 1]
 
-        if self.training_step % self.update_target_net_step == 0:
-            self.session.run(self.update_q_net)
+            _, cost = self.session.run([self.train_op, self.loss_func], {
+                self.s: s, self.a: a, self.r: r * 5, self.s_n: s_n
+            })
 
-        batch = self.buffer[np.random.choice(self.buffer_size, size=self.batch_size), :]
-
-        s = batch[:, :self.s_space]
-        s_n = batch[:, -self.s_space:]
-        a = batch[:, self.s_space].reshape((-1))
-        r = batch[:, self.s_space + 1]
-
-        _, cost = self.session.run([self.train_op, self.loss_func], {
-            self.s: s, self.a: a, self.r: r, self.s_n: s_n
-        })
-
-        self.training_step += 1
+            self.training_step += 1
 
 
 def main(_):
@@ -123,12 +124,13 @@ def main(_):
     env = gym.make('CartPole-v0')
     env.seed(1)
     env = env.unwrapped
+    # Init session.
     # Init agent.
     agent = Agent(env.action_space.n, env.observation_space.shape[0], **{
         KEY_MODEL_NAME: 'DQN',
-        KEY_TRAIN_EPISODE: 10000
+        KEY_TRAIN_EPISODE: 500
     })
-    start_game(env, agent, on_policy=False)
+    start_game(env, agent)
 
 
 if __name__ == '__main__':
