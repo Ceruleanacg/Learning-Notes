@@ -4,7 +4,5 @@
 
 .idea/
 
-static/data/
+static/*
 
-*.log
-*.json

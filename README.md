@@ -1,3 +1,7 @@
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](/LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Tensorflow-orange.svg)](https://www.tensorflow.org/)
+[![Python](https://img.shields.io/badge/Python-3.5-green.svg)]()
+
 # Learning Notes of DRL & DL
 
 A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
@@ -6,13 +10,21 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 
 ## Notes
 
+### Deep Learning Basic
+
 - [LinearRegression](/note/LinearRegression.ipynb)
 - [LogisticRegression](/note/LogisticRegression.ipynb)
 - [NeuralNetwork](/note/NeuralNetwork.ipynb)
+
+### Natural Language Processing
 - [Word2Vec](/note/Word2Vec.ipynb)
 - [GloVe](/note/GloVe.ipynb)
+
+### Deep Reinforcement Learning
+
 - [PolicyGradient](/note/PolicyGradient.ipynb)
 - [DQN](/note/DQN.ipynb)
+- [DoubleDQN](/note/DoubleDQN.ipynb)
 - [PPO](/note/PPO.ipynb)
 
 ## Codes
