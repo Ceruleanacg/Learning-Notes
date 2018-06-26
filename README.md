@@ -36,7 +36,7 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 - scipy
 - sklearn
 - matplotlib
-- tensorflow==1.8
+- tensorflow==1.9
 
 # Instructions for codes
 
