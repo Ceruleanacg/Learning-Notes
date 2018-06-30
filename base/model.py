@@ -178,3 +178,40 @@ class BaseRLModel(BaseModel):
     @abstractmethod
     def snapshot(self, s, a, r, s_n):
         pass
+
+
+class BaseSLModel(BaseModel):
+
+    def __init__(self, x_space, y_space, x_train, y_train, x_test, y_test, **options):
+        super(BaseSLModel, self).__init__(**options)
+        self.x_train, self.y_train = x_train, y_train
+        self.x_test, self.y_test = x_test, y_test
+        self.x_space, self.y_space = x_space, y_space
+
+    def _init_options(self, options):
+        super(BaseSLModel, self)._init_options(options)
+
+    @abstractmethod
+    def _init_input(self, *args):
+        pass
+
+    @abstractmethod
+    def _init_nn(self, *args):
+        pass
+
+    @abstractmethod
+    def _init_op(self):
+        pass
+
+    @abstractmethod
+    def train(self, *args):
+        pass
+
+    @abstractmethod
+    def predict(self, s):
+        pass
+
+    @abstractmethod
+    def evaluate(self, *args):
+        pass
+
