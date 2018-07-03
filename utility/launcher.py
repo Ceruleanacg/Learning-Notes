@@ -1,7 +1,7 @@
 from time import time
 
 
-def start_game(env, agent):
+def start_game(env, agent, process=None):
     # Train.
     if agent.mode == 'train':
         for episode in range(agent.train_episodes):
@@ -15,9 +15,15 @@ def start_game(env, agent):
                 s = s_n
                 if done:
                     # Logs.
-                    agent.logger.warning('Episode: {} | Times: {} | Rewards: {}'.format(episode,
-                                                                                        time() - now,
-                                                                                        r_episode))
+                    if process is None:
+                        agent.logger.warning('Episode: {} | Times: {} | Rewards: {}'.format(episode,
+                                                                                            time() - now,
+                                                                                            r_episode))
+                    else:
+                        agent.logger.warning('Process: {} | Episode: {} | Times: {} | Rewards: {}'.format(process,
+                                                                                                          episode,
+                                                                                                          time() - now,
+                                                                                                          r_episode))
                     break
             agent.train()
             if episode % 50 == 0:

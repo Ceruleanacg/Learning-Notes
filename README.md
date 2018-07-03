@@ -26,6 +26,7 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 - [DQN](/note/DQN.ipynb)
 - [DoubleDQN](/note/DoubleDQN.ipynb)
 - [PPO](/note/PPO.ipynb)
+- [A3C / DPPO](/note/A3C.ipynb)
 
 ## Codes
 
@@ -36,7 +37,7 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 - scipy
 - sklearn
 - matplotlib
-- tensorflow==1.9
+- tensorflow==1.8
 
 # Instructions for codes
 

@@ -16,22 +16,23 @@ def start_a3c(cluster, role, task_index):
         logging.warning('Parameter server started.')
         server.join()
     else:
-        with tf.device(tf.train.replica_device_setter(worker_device="/job:worker/task:{}".format(task_index),
-                                                      cluster=cluster)):
-
+        worker_device = "/job:worker/task:{}".format(task_index)
+        logging.warning('Worker: {},  server stated.'.format(worker_device))
+        with tf.device(tf.train.replica_device_setter(cluster=cluster)):
             # Make env.
             env = gym.make('CartPole-v0')
             env.seed(1)
             env = env.unwrapped
             # Init session.
             session = tf.Session(server.target)
+            # session = tf.Session()
             # Init agent.
             agent = PPO.Agent(env.action_space.n, env.observation_space.shape[0], **{
                 KEY_SESSION: session,
                 KEY_MODEL_NAME: 'PPO',
                 KEY_TRAIN_EPISODE: 1000
             })
-            start_game(env, agent)
+            start_game(env, agent, task_index)
 
 
 def main():
@@ -41,7 +42,6 @@ def main():
             'localhost:8001',
             'localhost:8002',
             'localhost:8003',
-            'localhost:8004',
         ],
         'ps': [
             'localhost:8000'
@@ -53,10 +53,9 @@ def main():
         ('worker', 0),
         ('worker', 1),
         ('worker', 2),
-        ('worker', 3)
     ]
 
-    pool = mp.Pool(processes=5)
+    pool = mp.Pool(processes=4)
 
     for role, task_index in role_task_index_map:
         pool.apply_async(start_a3c, args=(cluster, role, task_index, ))
