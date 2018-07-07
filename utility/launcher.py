@@ -33,6 +33,7 @@ def start_game(env, agent, process=None):
         # Reset env.
         s, r_episode, now = env.reset(), 0, time()
         while True:
+            env.render()
             a = agent.predict(s)
             s_n, r, done, _, = env.step(a)
             r_episode += r

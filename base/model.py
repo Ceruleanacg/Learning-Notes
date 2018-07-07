@@ -40,14 +40,14 @@ class BaseModel(object):
         self.logger = get_logger(self.model_name, self.mode, 'algo')
 
     def _init_saver(self):
-        save_dir = os.path.join(CHECKPOINTS_DIR, self.model_name, self.save_dir)
+        save_dir = os.path.join(CHECKPOINTS_DIR, self.model_name)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        self.checkpoint_path = os.path.join(CHECKPOINTS_DIR, self.model_name, self.save_dir, 'ckpt')
+        self.checkpoint_path = os.path.join(CHECKPOINTS_DIR, self.model_name, save_dir, 'ckpt')
         self.saver = tf.train.Saver()
 
     def _init_summary_writer(self):
-        self.summary_path = os.path.join(SUMMARIES_DIR, self.model_name, self.save_dir, DATETIME_NOW)
+        self.summary_path = os.path.join(SUMMARIES_DIR, self.model_name, DATETIME_NOW)
         self.summary_writer = tf.summary.FileWriter(self.summary_path, graph=self.session.graph)
         self.merged_summary_op = tf.summary.merge_all()
 
@@ -73,11 +73,6 @@ class BaseModel(object):
             self.mode = options[KEY_MODE]
         except KeyError:
             self.mode = 'train'
-
-        try:
-            self.save_dir = options[KEY_SAVE_DIR]
-        except KeyError:
-            self.save_dir = DATETIME_NOW
 
         try:
             self.learning_rate = options[KEY_LEARNING_RATE]

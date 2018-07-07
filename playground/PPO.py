@@ -131,6 +131,7 @@ def main(_):
     env = env.unwrapped
     # Init agent.
     agent = Agent(env.action_space.n, env.observation_space.shape[0], **{
+        KEY_MODE: 'test',
         KEY_MODEL_NAME: 'PPO',
         KEY_TRAIN_EPISODE: 10000
     })
