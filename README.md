@@ -28,9 +28,14 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 - [PPO](/note/PPO.ipynb)
 - [A3C / DPPO](/note/A3C.ipynb)
 
+### Deep Learning Engineering
+
+- [TensorFlow Serving](/note/TensorFlowServing.ipynb)
+
 ## Codes
 
 - [Artifical Neuron Network (ANN)](/ann/Dense.py)   
+
 
 # Requirements
 - numpy
