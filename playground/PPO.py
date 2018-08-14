@@ -52,10 +52,12 @@ class Agent(BaseRLModel):
         with tf.variable_scope('actor_loss_func'):
             # one hot a.
             a_one_hot = tf.one_hot(self.a, self.a_space)
+            # Clip a_p_r.
+            a_p_r = tf.clip_by_value(self.a_p_r, 1 - self.epsilon, 1 + self.epsilon)
             # cross entropy.
             cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=a_one_hot, logits=self.a_logits_eval)
             # loss func.
-            self.a_loss_func = tf.reduce_mean(cross_entropy * self.adv * self.a_p_r)
+            self.a_loss_func = tf.reduce_mean(cross_entropy * a_p_r * self.adv)
         with tf.variable_scope('actor_optimizer'):
             self.a_optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.a_loss_func)
 
@@ -100,6 +102,7 @@ class Agent(BaseRLModel):
         self.r_buffer.append(r)
 
     def train(self):
+        self.session.run(self.update_target_a_op)
         # Copy r_buffer
         r_buffer = self.r_buffer
         # Init r_tau
@@ -131,7 +134,7 @@ def main(_):
     env = env.unwrapped
     # Init agent.
     agent = Agent(env.action_space.n, env.observation_space.shape[0], **{
-        KEY_MODE: 'test',
+        # KEY_MODE: 'test',
         KEY_MODEL_NAME: 'PPO',
         KEY_TRAIN_EPISODE: 10000
     })
