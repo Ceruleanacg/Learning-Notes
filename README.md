@@ -15,6 +15,7 @@ A repo of Learning notes of DRL & DL, theory, codes, models and notes maybe.
 - [LinearRegression](/note/LinearRegression.ipynb)
 - [LogisticRegression](/note/LogisticRegression.ipynb)
 - [RegressionTree](/note/RegressionTree.ipynb)
+- [Support Vector Machine](/note/SVM.ipynb)
 - [NeuralNetwork](/note/NeuralNetwork.ipynb)
 
 ### Natural Language Processing
