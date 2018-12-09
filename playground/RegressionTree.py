@@ -18,18 +18,19 @@ class RegressionTree(object):
         self._tree = None
         self.x_data = None
         self.y_data = None
+        self.num_nodes = 0
 
     def fit(self, x, y, max_depth=3):
         self.x_data = x
         self.y_data = y
         # Calculate nodes.
-        num_nodes = 2 ** max_depth - 1
+        self.num_nodes = 2 ** max_depth - 1
         # Init root node.
         root_node = self.make_node(x, y)
 
-        def _fit(_x, _y, _node, _num_nodes):
+        def _fit(_x, _y, _node):
 
-            if _num_nodes <= 0:
+            if self.num_nodes <= 0:
                 return
 
             # Make R.
@@ -38,29 +39,27 @@ class RegressionTree(object):
 
             # Make left node.
             l_node = self.make_node(x_r1, y_r1)
-
             _node.l_node = l_node
+
+            self.num_nodes -= 1
 
             if _node.l_node:
                 # Update offset.
-                # l_node.offset = _node.offset
-
-                _num_nodes -= 1
-                _fit(x_r1, y_r1, _node.l_node, _num_nodes)
+                l_node.offset = _node.offset
+                _fit(x_r1, y_r1, _node.l_node)
 
             # Make right node.
             r_node = self.make_node(x_r2, y_r2)
-
             _node.r_node = r_node
+
+            self.num_nodes -= 1
 
             if _node.r_node:
                 # Update offset.
                 r_node.offset = _node.i + _node.offset
+                _fit(x_r2, y_r2, _node.r_node)
 
-                _num_nodes -= 1
-                _fit(x_r2, y_r2, _node.r_node, _num_nodes)
-
-        _fit(x, y, root_node, num_nodes)
+        _fit(x, y, root_node)
 
         self._tree = root_node
 
@@ -122,7 +121,7 @@ data_y = 2 * data_x
 
 
 t = RegressionTree()
-t.fit(data_x, data_y, max_depth=8)
+t.fit(data_x, data_y, max_depth=3)
 # print(t.predict([-4]))
 # print(t.predict([1]))
 # print(t.predict([2]))
